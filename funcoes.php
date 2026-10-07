@@ -8,7 +8,9 @@ function carregarXml(string $arquivo, string $raiz): SimpleXMLElement
     $conteudo = is_file($arquivo) ? file_get_contents($arquivo) : false;
 
     if ($conteudo === false || trim($conteudo) === '') {
-        return new SimpleXMLElement('<?xml version="1.0" encoding="UTF-8"?><' . $raiz . '/>');
+        return new SimpleXMLElement(
+            '<?xml version="1.0" encoding="UTF-8"?><' . $raiz . '/>'
+        );
     }
 
     libxml_use_internal_errors(true);
@@ -101,10 +103,51 @@ function encerrarComErro(
 
     echo '<!doctype html>';
     echo '<html lang="pt-BR">';
+    echo '<head>';
     echo '<meta charset="UTF-8">';
     echo '<title>Erro</title>';
+
+    echo '<style>
+        * {
+            box-sizing: border-box;
+            font-family: Arial, Helvetica, sans-serif;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            background: #121212;
+            color: #f0f0f0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .erro {
+            width: 450px;
+            padding: 30px;
+            background: #1c1c1c;
+            border: 1px solid #333;
+            border-radius: 16px;
+            text-align: center;
+            box-shadow: 0 15px 40px rgba(0,0,0,0.45);
+        }
+
+        a {
+            color: #f0f0f0;
+        }
+    </style>';
+
+    echo '</head>';
+    echo '<body>';
+
+    echo '<div class="erro">';
     echo '<p>' . escapar($mensagem) . '</p>';
     echo '<p><a href="lista.php">Voltar aos tópicos</a></p>';
+    echo '</div>';
+
+    echo '</body>';
+    echo '</html>';
 
     exit;
 }

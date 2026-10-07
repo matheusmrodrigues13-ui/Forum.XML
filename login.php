@@ -1,82 +1,134 @@
 <?php
-$sucesso = false;
 
-if ($_SERVER["REQUEST_METHOD"] === "POST") {
-    $usuario = simplexml_load_file("usuarios.xml");
-    $novo = $usuario->addChild("usuario");
-    $novo->addChild("nome", $_POST["nome"]);
-    $novo->addChild("celular", $_POST["celular"]);
-    $novo->addChild("email", $_POST["email"]);
-    $novo->addChild("senha", md5($_POST["senha"]));
-    $usuario->asXML("usuarios.xml");
-    $sucesso = true;
+session_start();
+
+require_once __DIR__ . '/funcoes.php';
+
+$erro = '';
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+
+    $email = strtolower(
+        trim((string) ($_POST['email'] ?? ''))
+    );
+
+    $senha = (string) ($_POST['senha'] ?? '');
+
+    try {
+
+        $usuarios = carregarXml(
+            ARQUIVO_USUARIOS,
+            'usuarios'
+        );
+
+        foreach ($usuarios->usuario as $usuario) {
+
+            if (
+                strtolower(trim((string) $usuario->email))
+                === $email
+                &&
+                password_verify(
+                    $senha,
+                    (string) $usuario->senha
+                )
+            ) {
+
+                $_SESSION['usuario'] =
+                    (string) $usuario->email;
+
+                header(
+                    'Location: criar_topico.php'
+                );
+
+                exit;
+            }
+        }
+
+        $erro = 'Login inválido!';
+
+    } catch (RuntimeException $excecao) {
+
+        $erro = $excecao->getMessage();
+    }
 }
+
 ?>
+
 <!DOCTYPE html>
 <html lang="pt-br">
+
 <head>
+
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cadastro</title>
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Login</title>
+
     <style>
+
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
             font-family: Arial, Helvetica, sans-serif;
         }
+
         body {
             min-height: 100vh;
             background: #121212;
+            color: white;
             display: flex;
             justify-content: center;
             align-items: center;
-            color: #fff;
         }
+
         .Login {
-            width: 420px;
+            width: 400px;
             padding: 40px;
             background: #1c1c1c;
             border: 1px solid #333;
             border-radius: 16px;
             box-shadow: 0 15px 40px rgba(0, 0, 0, 0.45);
         }
+
         h2 {
-            margin-bottom: 30px;
             text-align: center;
+            margin-bottom: 30px;
             color: #f0f0f0;
-            font-size: 24px;
         }
+
         label {
             display: block;
             color: #d8d8d8;
             font-size: 14px;
-            margin-bottom: 18px;
+            margin-bottom: 15px;
         }
-        input[type="text"],
-        input[type="email"],
-        input[type="password"] {
+
+        input {
             width: 100%;
             height: 42px;
-            margin-top: 7px;
-            padding: 0 13px;
+            padding: 10px 12px;
+            margin-top: 6px;
             background: #252525;
             color: white;
             border: 1px solid #444;
             border-radius: 8px;
             outline: none;
-            transition: 0.2s;
         }
-        input[type="text"]:focus,
-        input[type="email"]:focus,
-        input[type="password"]:focus {
+
+        input:focus {
             border-color: #777;
             background: #292929;
         }
-        .cadastrar {
+
+        button {
             width: 100%;
             height: 44px;
-            margin-top: 8px;
+            margin-top: 5px;
             border: none;
             border-radius: 8px;
             background: #f0f0f0;
@@ -84,51 +136,84 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             font-size: 15px;
             font-weight: bold;
             cursor: pointer;
-            transition: 0.2s;
         }
-        .cadastrar:hover {
+
+        button:hover {
             background: #d6d6d6;
-            transform: translateY(-1px);
         }
-        .sucesso {
+
+        .erro {
+            margin-bottom: 20px;
+            padding: 12px;
+            background: #252525;
+            border: 1px solid #444;
+            border-radius: 8px;
             text-align: center;
         }
-        .sucesso p {
-            margin-bottom: 15px;
-            color: #d9ffe6;
+
+        .cadastro {
+            margin-top: 20px;
+            text-align: center;
         }
-        .sucesso a {
-            color: #fff;
-            text-decoration: none;
+
+        a {
+            color: #f0f0f0;
         }
-        .sucesso a:hover {
-            text-decoration: underline;
-        }
+
     </style>
+
 </head>
+
 <body>
-    <?php if ($sucesso) { ?>
-        <div class="Login sucesso">
-            <p>Usuário cadastrado com sucesso!</p>
-            <a href="login.php">Fazer login</a>
+
+    <form method="POST" class="Login">
+
+        <h2>
+            Login
+        </h2>
+
+        <?php if ($erro !== ''): ?>
+
+            <div class="erro">
+                <?= escapar($erro) ?>
+            </div>
+
+        <?php endif; ?>
+
+        <label>
+            E-mail:
+
+            <input
+                type="email"
+                name="email"
+                required
+            >
+        </label>
+
+        <label>
+            Senha:
+
+            <input
+                type="password"
+                name="senha"
+                required
+            >
+        </label>
+
+        <button type="submit">
+            Entrar
+        </button>
+
+        <div class="cadastro">
+
+            <a href="index.php">
+                Criar conta
+            </a>
+
         </div>
-    <?php } else { ?>
-        <form method="POST" class="Login">
-            <h2>Criar conta</h2>
-            <label>Nome:
-                <input type="text" name="nome" required>
-            </label>
-            <label>Celular:
-                <input type="text" name="celular" required>
-            </label>
-            <label>Email:
-                <input type="email" name="email" required>
-            </label>
-            <label>Senha:
-                <input type="password" name="senha" required>
-            </label>
-            <input type="submit" value="Cadastrar" class="cadastrar">
-        </form>
-    <?php } ?>
+
+    </form>
+
 </body>
+
 </html>
