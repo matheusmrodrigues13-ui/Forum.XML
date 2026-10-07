@@ -27,7 +27,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         }
         body {
             min-height: 100vh;
-            background: #121212;
+            background-image: linear-gradient(to left, aqua, blueviolet);
             display: flex;
             justify-content: center;
             align-items: center;
@@ -36,7 +36,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         .Login {
             width: 420px;
             padding: 40px;
-            background: #1c1c1c;
+            background-image: linear-gradient(to left, aqua, blueviolet);
             border: 1px solid #333;
             border-radius: 16px;
             box-shadow: 0 15px 40px rgba(0, 0, 0, 0.45);
